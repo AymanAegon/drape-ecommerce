@@ -4,19 +4,16 @@ import { useState } from 'react';
 import { ShippingAddressForm } from '@/components/checkout/shipping-address-form';
 import { CartReview } from '@/components/checkout/cart-review';
 import { Button } from '@/components/ui/button';
-import { mockCartItems } from '@/data/mock-data';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import type { CartItem } from '@/types';
+import { useCart } from '@/context/state';
 
 export default function CheckoutPage() {
-  const [cartItems, setCartItems] = useState<CartItem[]>(mockCartItems); // In a real app, this would come from context/state management
   const [isAddressSaved, setIsAddressSaved] = useState(false);
   const { toast } = useToast();
+  const { cartItems, setCartItems } = useCart();
 
-  const handleAddressSubmit = () => {
-    setIsAddressSaved(true);
-  };
+  const handleAddressSubmit = () => { setIsAddressSaved(true); };
 
   const handleProceedToPayment = () => {
     if (!isAddressSaved) {
