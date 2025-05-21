@@ -15,18 +15,9 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { cartItems, setCartItems } = useCart();
   const { toast } = useToast();
-  const initialLoad = useRef(true);
-
-  useEffect(() => {
-    // Prevent toast from showing on initial load
-    if (initialLoad.current) {
-      initialLoad.current = false;
-      return;
-    }
-    toast({ title: "Item Added to Cart", description: `${product.name} has been added to your cart.` });
-  }, [cartItems, product.id, product.name, toast]);
 
   function handleAddToCart(product: Product): void {
+    toast({ title: "Item Added to Cart", description: `${product.name} has been added to your cart.` });
     setCartItems((prevItems) => {
       const existingItem = prevItems.find((item) => item.productId === product.id);
       if (existingItem) {

@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
+import { CartProvider } from '@/context/state';
+import { Footer } from '@/components/layout/footer';
 
 const geistSans = GeistSans;
 
@@ -18,7 +20,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={geistSans.className}>
       <body className="min-h-screen bg-background font-sans antialiased">
-        {children}
+        <div className="flex min-h-screen flex-col">
+          <CartProvider>
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </CartProvider>
+        </div>
         <Toaster />
       </body>
     </html>
