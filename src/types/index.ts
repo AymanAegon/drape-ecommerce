@@ -11,6 +11,13 @@ export interface Product {
   brand?: string;
 }
 
+
+import { User as AuthUser } from 'firebase/auth';
+
+export interface User extends AuthUser {
+  fullName: string;
+}
+
 export interface CartItem {
   productId: string;
   name: string;

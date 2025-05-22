@@ -27,3 +27,55 @@ export const useCart = () => {
   }
   return context;
 };
+
+import { auth } from '@/components/Auth/firebase';
+import { db } from '@/components/Auth/firebase'; // Assuming db is initialized and exported from firebase.js
+import { User } from '@/types/index';
+import { doc, getDoc } from 'firebase/firestore';
+
+interface AuthContextType {
+  user: User | null;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+
+  React.useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        // User is signed in, fetch additional data from Firestore
+        const userDocRef = doc(db, 'users', user.uid); // Assuming you have a 'users' collection
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (userDocSnap.exists()) {
+          const userData = userDocSnap.data();
+          // Combine Firebase user data with data from Firestore
+          
+          setUser({ ...user, ...userData } as User);
+        } else {
+          // Handle the case where the user document doesn't exist in Firestore
+          setUser(user as User); // Set the user without full name for now
+        }
+      } else {
+        setUser(null); // User is signed out
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ user }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
