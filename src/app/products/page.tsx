@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from 'react';
 import type { Product, Filters } from '@/types';
 import { ProductGrid } from '@/components/products/product-grid';
 import { ProductFilters } from '@/components/products/product-filters';
-import { mockProducts, categories as allCategories, sizes as allSizes, minPrice as globalMinPrice, maxPrice as globalMaxPrice } from '@/data/mock-data';
+import { products, categories as allCategories, sizes as allSizes, minPrice as globalMinPrice, maxPrice as globalMaxPrice } from '@/data/mock-data';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Header } from '@/components/layout/header';
 import { Separator } from '@/components/ui/separator';
@@ -26,9 +26,9 @@ export default function ProductsPage() {
   const resetFilters = useCallback(() => {
     setFilters(initialFilters);
   }, []);
-
   const filteredProducts = useMemo(() => {
-    return mockProducts.filter((product) => {
+
+    return products.filter((product) => {
       const { category, priceRange, size, searchQuery } = filters;
       if (category !== 'All' && product.category !== category) return false;
       if (product.price < priceRange[0] || product.price > priceRange[1]) return false;

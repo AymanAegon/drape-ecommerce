@@ -1,4 +1,21 @@
 import type { Product, CartItem } from '@/types';
+import { db, auth } from "../components/Auth/firebase";
+import { collection, getDocs } from 'firebase/firestore';
+
+const fetchProducts = async () => {
+  try {
+    const productsRef = collection(db, "products");
+    const productsSnapshot = await getDocs(productsRef);
+    const productsData = productsSnapshot.docs.map(doc => {return {id: doc.id ,...doc.data()}});
+    return productsData as Product[];
+  } catch (error) {
+    console.error('Error fetching products:', error);
+  }
+  return [];
+};
+
+export const products: Product[] = await fetchProducts();
+
 
 export const mockProducts: Product[] = [
   {

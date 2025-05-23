@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { ShippingAddressForm } from '@/components/checkout/shipping-address-form';
 import { CartReview } from '@/components/checkout/cart-review';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/context/state';
 import { Header } from '@/components/layout/header';
@@ -59,6 +58,13 @@ export default function CheckoutPage() {
                 disabled={cartItems.length === 0}
               >
                 Proceed to Payment
+              </Button>
+              <Button
+                onClick={() => setCartItems([])}
+                className="w-full text-lg py-6 bg-red-500 hover:bg-red-600 text-white"
+                disabled={cartItems.length === 0}
+              >
+                Clear Cart
               </Button>
             </div>
           </div>

@@ -1,7 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import type { CartItem } from '@/types';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import type { CartItem, Product } from '@/types';
+
+// import { auth } from '@/components/Auth/firebase';
+// import { db } from '@/components/Auth/firebase'; // Assuming db is initialized and exported from firebase.js
+import { User } from '@/types/index';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { db, auth } from "../components/Auth/firebase";
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -11,7 +17,35 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  useEffect(() => {
+    const fetchCart = async () => {
+      if (user) {
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          const userCart = userDocSnap.data().cart;
+          setCartItems(userCart || []);
+        }
+      }
+    };
+    fetchCart();
+  }, [user]);
+
+  useEffect(() => {
+    const updateCart = async () => {
+      if (user) {
+        await updateDoc(doc(db, 'users', user.uid), {
+          cart: cartItems,
+        });
+      }
+    }
+    updateCart();
+  }, [cartItems]);
+
+
 
   return (
     <CartContext.Provider value={{ cartItems, setCartItems }}>
@@ -27,11 +61,6 @@ export const useCart = () => {
   }
   return context;
 };
-
-import { auth } from '@/components/Auth/firebase';
-import { db } from '@/components/Auth/firebase'; // Assuming db is initialized and exported from firebase.js
-import { User } from '@/types/index';
-import { doc, getDoc } from 'firebase/firestore';
 
 interface AuthContextType {
   user: User | null;

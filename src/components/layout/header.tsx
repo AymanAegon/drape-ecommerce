@@ -30,12 +30,17 @@ export function Header() {
           {/* Add other nav links here if needed */}
         </nav>
         <div className="flex flex-1 items-center justify-end gap-2">
-          <span>{user?.fullName || user?.email}</span>
-          <Button variant="outline" size="icon" asChild aria-label="Shopping Cart" onClick={handleLogout}>
-            <div className='relative'>
-              <LogOut className="h-5 w-5" />
-            </div>
-          </Button>
+          {user ? (
+            <><span>{user?.fullName || user?.email}</span><Button variant="outline" size="icon" asChild aria-label="Shopping Cart" onClick={handleLogout}>
+              <div className='relative'>
+                <LogOut className="h-5 w-5" />
+              </div>
+            </Button></>
+          ) : (
+            <Button variant="outline" size="icon" asChild aria-label="Shopping Cart">
+              <Link href="/login">Login</Link>
+            </Button>
+          )}
           <Button variant="outline" size="icon" asChild aria-label="Shopping Cart">
             <Link href="/checkout" className='relative'>
               <ShoppingCart className="h-5 w-5" />
