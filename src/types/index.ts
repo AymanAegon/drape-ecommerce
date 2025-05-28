@@ -46,6 +46,7 @@ export interface Address {
   state: string;
   zipCode: string;
   phoneNumber: string;
+  email: string;
 }
 
 export interface OrderProduct {

@@ -9,9 +9,10 @@ import { Trash } from 'lucide-react';
 
 interface CartReviewProps {
   items: CartItem[];
+  noEditing?: boolean;
 }
 
-export function CartReview({ items }: CartReviewProps) {
+export function CartReview({ items, noEditing }: CartReviewProps) {
   const { setCartItems } = useCart();
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shippingCost = items.length > 0 ? 5.00 : 0; // Example shipping cost
@@ -61,15 +62,11 @@ export function CartReview({ items }: CartReviewProps) {
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
-                    <Trash className="h-5 w-5 text-muted-foreground cursor-pointer"
-                      onClick={() => {removeItem(item)}}
-                    />
-                    {/* <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCartItems(items.filter((i) => i !== item))}
-                    >
-                      Remove</Button> */}
+                    {!noEditing && (
+                      <Trash className="h-5 w-5 text-muted-foreground cursor-pointer"
+                        onClick={() => {removeItem(item)}}
+                      />
+                    )}
                   </div>
                 </div>
               ))}

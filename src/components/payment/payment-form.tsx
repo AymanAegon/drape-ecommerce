@@ -11,10 +11,12 @@ import { useToast } from '@/hooks/use-toast';
 import { CreditCard, Wallet } from 'lucide-react'; // Using Wallet for PayPal as an example
 import { useCart } from '@/context/state';
 import { useRouter } from 'next/navigation';
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "@/components/Auth/firebase"; // Assuming firebase.js exports `db`
 
 export function PaymentForm() {
   const { toast } = useToast();
-  const { setCartItems } = useCart();
+  const { setCartItems, order } = useCart();
   const router = useRouter();
 
   const [cardNumber, setCardNumber] = useState('');
@@ -44,6 +46,23 @@ export function PaymentForm() {
       title: "Payment Successful!",
       description: "Your order has been placed. (Simulation)",
     });
+
+    addDoc(collection(db, "orders"), order)
+      .then(() => {
+        toast({
+          title: "Success",
+          description: "Order placed successfully!",
+          variant: "default",
+        });
+      })
+      .catch((error) => {
+        toast({
+          title: "Error",
+          description: "Failed to place order.",
+          variant: "destructive",
+        });
+        console.error(error);
+      });
     setCartItems([]); // Clear cart on successful payment
     router.push('/products'); // Redirect to a confirmation or home page
     setIsProcessing(false);
@@ -59,10 +78,27 @@ export function PaymentForm() {
     });
     // In a real app, you'd redirect here. For simulation, we'll just show success.
     await new Promise(resolve => setTimeout(resolve, 1000));
-     toast({
+    toast({
       title: "Payment Successful!",
       description: "Your order has been placed via PayPal. (Simulation)",
     });
+
+    addDoc(collection(db, "orders"), order)
+      .then(() => {
+        toast({
+          title: "Success",
+          description: "Order placed successfully!",
+          variant: "default",
+        });
+      })
+      .catch((error) => {
+        toast({
+          title: "Error",
+          description: "Failed to place order.",
+          variant: "destructive",
+        });
+        console.error(error);
+      });
     setCartItems([]); // Clear cart
     router.push('/products'); // Redirect
     setIsProcessing(false);
@@ -88,46 +124,46 @@ export function PaymentForm() {
             <form onSubmit={handleCardPayment} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="cardHolderName">Cardholder Name</Label>
-                <Input 
-                  id="cardHolderName" 
-                  placeholder="John Doe" 
-                  value={cardHolderName} 
-                  onChange={(e) => setCardHolderName(e.target.value)} 
-                  required 
+                <Input
+                  id="cardHolderName"
+                  placeholder="John Doe"
+                  value={cardHolderName}
+                  onChange={(e) => setCardHolderName(e.target.value)}
+                  required
                   disabled={isProcessing}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="cardNumber">Card Number</Label>
-                <Input 
-                  id="cardNumber" 
-                  placeholder="•••• •••• •••• ••••" 
-                  value={cardNumber} 
-                  onChange={(e) => setCardNumber(e.target.value)} 
-                  required 
+                <Input
+                  id="cardNumber"
+                  placeholder="•••• •••• •••• ••••"
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(e.target.value)}
+                  required
                   disabled={isProcessing}
                 />
               </div>
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="expiryDate">Expiry Date</Label>
-                  <Input 
-                    id="expiryDate" 
-                    placeholder="MM/YY" 
-                    value={expiryDate} 
-                    onChange={(e) => setExpiryDate(e.target.value)} 
-                    required 
+                  <Input
+                    id="expiryDate"
+                    placeholder="MM/YY"
+                    value={expiryDate}
+                    onChange={(e) => setExpiryDate(e.target.value)}
+                    required
                     disabled={isProcessing}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="cvv">CVV</Label>
-                  <Input 
-                    id="cvv" 
-                    placeholder="•••" 
-                    value={cvv} 
-                    onChange={(e) => setCvv(e.target.value)} 
-                    required 
+                  <Input
+                    id="cvv"
+                    placeholder="•••"
+                    value={cvv}
+                    onChange={(e) => setCvv(e.target.value)}
+                    required
                     disabled={isProcessing}
                   />
                 </div>
@@ -143,10 +179,10 @@ export function PaymentForm() {
                 You will be redirected to PayPal to complete your purchase securely.
               </p>
               <div className="flex justify-center">
-                 <Wallet className="h-16 w-16 text-blue-600" />
+                <Wallet className="h-16 w-16 text-blue-600" />
               </div>
               <Button onClick={handlePayPalPayment} className="w-full text-lg py-6 bg-blue-600 hover:bg-blue-700 text-white" disabled={isProcessing}>
-                 {isProcessing ? 'Processing...' : 'Proceed to PayPal'}
+                {isProcessing ? 'Processing...' : 'Proceed to PayPal'}
               </Button>
             </div>
           </TabsContent>

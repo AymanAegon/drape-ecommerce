@@ -49,7 +49,7 @@ export default function PaymentPage() {
           </div>
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
-              <CartReview items={cartItems} />
+              <CartReview items={cartItems} noEditing />
             </div>
           </div>
         </div>

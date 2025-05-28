@@ -13,7 +13,7 @@ import { useAuth, useCart } from "@/context/state";
 
 export function ShippingAddressForm({ onSubmit }: { onSubmit: () => void }) {
   const { user } = useAuth();
-  const { cartItems } = useCart();
+  const { cartItems, setOrder } = useCart();
   const { toast } = useToast();
   const [fullName, setFullName] = useState<string>("");
   const [addressLine1, setAddressLine1] = useState<string>("");
@@ -30,33 +30,39 @@ export function ShippingAddressForm({ onSubmit }: { onSubmit: () => void }) {
     }
   }, [user])
 
-  const inputClassTxt = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm";
-  const labelClassTxt = "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70";
-
-  function handleSubmit() {
+  useEffect(() => {
     const addressData: Address = {
       street: addressLine1,
       city: city,
       state: stateOrProvince,
       zipCode: postalCode,
       phoneNumber: phoneNumber,
+      email: email,
     };
 
     let totalPrice = 0;
     cartItems.forEach(item => {
       totalPrice = item.price * item.quantity;
     });
+    const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     const orderData: any = {
       customerName: fullName,
       shippingAddress: addressData,
       products: cartItems,
-      totalAmount: totalPrice,
+      totalAmount: subtotal,
       status: "Pending",
       orderDate: serverTimestamp(),
     };
-    onSubmit();
 
+    setOrder(orderData);
+  }, [fullName, addressLine1, addressLine2, city, stateOrProvince, postalCode, country, phoneNumber])
+
+  const inputClassTxt = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm";
+  const labelClassTxt = "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70";
+
+  function handleSubmit() {
+    onSubmit();
     // addDoc(collection(db, "orders"), orderData)
     //   .then(() => {
     //     toast({
@@ -131,11 +137,9 @@ export function ShippingAddressForm({ onSubmit }: { onSubmit: () => void }) {
             <label className={labelClassTxt} htmlFor="phoneNumber">Phone Number (Optional)</label>
             <input className={inputClassTxt} name="phoneNumber" placeholder="(555) 123-4567" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
           </div>
-          {user &&
-            (<Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary/90">
-              Save Address
-            </Button>)
-          }
+          {/* <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary/90">
+            Save Address
+          </Button> */}
         </form>
       </CardContent>
     </Card>

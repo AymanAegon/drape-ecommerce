@@ -25,14 +25,14 @@ export default function CheckoutPage() {
   };
 
   const handleProceedToPayment = () => {
-    if (!isAddressSaved) {
-      toast({
-        title: "Address Required",
-        description: "Please save your shipping address before proceeding to payment.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // if (!isAddressSaved) {
+    //  toast({
+    //    title: "Address Required",
+    //    description: "Please save your shipping address before proceeding to payment.",
+    //    variant: "destructive",
+    //  });
+    //  return;
+    // }
     if (cartItems.length === 0) {
       toast({
         title: "Empty Cart",

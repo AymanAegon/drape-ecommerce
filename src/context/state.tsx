@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import type { CartItem, Product } from '@/types';
+import type { CartItem, Order, Product } from '@/types';
 
 // import { auth } from '@/components/Auth/firebase';
 // import { db } from '@/components/Auth/firebase'; // Assuming db is initialized and exported from firebase.js
@@ -12,6 +12,8 @@ import { db, auth } from "../components/Auth/firebase";
 interface CartContextType {
   cartItems: CartItem[];
   setCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>;
+  order: Order | null;
+  setOrder: React.Dispatch<React.SetStateAction<Order | null>>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -19,6 +21,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [order, setOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -48,7 +51,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
 
   return (
-    <CartContext.Provider value={{ cartItems, setCartItems }}>
+    <CartContext.Provider value={{ cartItems, setCartItems, order, setOrder }}>
       {children}
     </CartContext.Provider>
   );
