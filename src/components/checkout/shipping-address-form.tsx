@@ -1,58 +1,78 @@
 'use client';
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
+import { collection, addDoc, serverTimestamp, FieldValue } from "firebase/firestore";
+import { db } from "@/components/Auth/firebase"; // Assuming firebase.js exports `db`
+
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Order, Address } from '@/types/index'; // Assuming Order and Address interfaces are defined here
 import { useToast } from '@/hooks/use-toast';
+import { useEffect, useState } from "react";
+import { useAuth, useCart } from "@/context/state";
 
-const addressSchema = z.object({
-  fullName: z.string().min(2, { message: 'Full name must be at least 2 characters.' }),
-  addressLine1: z.string().min(5, { message: 'Address is too short.' }),
-  addressLine2: z.string().optional(),
-  city: z.string().min(2, { message: 'City name is too short.' }),
-  stateOrProvince: z.string().min(2, { message: 'State/Province is too short.' }),
-  postalCode: z.string().min(3, { message: 'Postal code is too short.' }),
-  country: z.string().min(2, { message: 'Country name is too short.' }),
-  phoneNumber: z.string().optional(),
-});
 
-type AddressFormValues = z.infer<typeof addressSchema>;
-
-export function ShippingAddressForm({ onSubmit }: { onSubmit: (data: AddressFormValues) => void }) {
+export function ShippingAddressForm({ onSubmit }: { onSubmit: () => void }) {
+  const { user } = useAuth();
+  const { cartItems } = useCart();
   const { toast } = useToast();
-  const form = useForm<AddressFormValues>({
-    resolver: zodResolver(addressSchema),
-    defaultValues: {
-      fullName: '',
-      addressLine1: '',
-      addressLine2: '',
-      city: '',
-      stateOrProvince: '',
-      postalCode: '',
-      country: 'United States',
-      phoneNumber: '',
-    },
-  });
+  const [fullName, setFullName] = useState<string>("");
+  const [addressLine1, setAddressLine1] = useState<string>("");
+  const [addressLine2, setAddressLine2] = useState<string>("");
+  const [city, setCity] = useState<string>("");
+  const [stateOrProvince, setStateOrProvince] = useState<string>("");
+  const [postalCode, setPostalCode] = useState<string>("");
+  const [country, setCountry] = useState<string>("");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [email, setEmail] = useState<string>(user?.email || "");
+  useEffect(() => {
+    if (user) {
+      setEmail(user?.email || "");
+    }
+  }, [user])
 
-  const handleFormSubmit = (data: AddressFormValues) => {
-    console.log('Shipping Address:', data);
-    toast({
-      title: "Address Saved",
-      description: "Your shipping address has been saved.",
+  const inputClassTxt = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm";
+  const labelClassTxt = "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70";
+
+  function handleSubmit() {
+    const addressData: Address = {
+      street: addressLine1,
+      city: city,
+      state: stateOrProvince,
+      zipCode: postalCode,
+      phoneNumber: phoneNumber,
+    };
+
+    let totalPrice = 0;
+    cartItems.forEach(item => {
+      totalPrice = item.price * item.quantity;
     });
-    onSubmit(data); // Propagate submit event if needed for parent component
-  };
+
+    const orderData: any = {
+      customerName: fullName,
+      shippingAddress: addressData,
+      products: cartItems,
+      totalAmount: totalPrice,
+      status: "Pending",
+      orderDate: serverTimestamp(),
+    };
+    onSubmit();
+
+    // addDoc(collection(db, "orders"), orderData)
+    //   .then(() => {
+    //     toast({
+    //       title: "Success",
+    //       description: "Order placed successfully!",
+    //       variant: "default",
+    //     });
+    //   })
+    //   .catch((error) => {
+    //     toast({
+    //       title: "Error",
+    //       description: "Failed to place order.",
+    //       variant: "destructive",
+    //     });
+    //   });
+  }
 
   return (
     <Card className="shadow-lg">
@@ -60,121 +80,63 @@ export function ShippingAddressForm({ onSubmit }: { onSubmit: (data: AddressForm
         <CardTitle className="text-2xl">Shipping Address</CardTitle>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="fullName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="John Doe" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="addressLine1"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Address Line 1</FormLabel>
-                  <FormControl>
-                    <Input placeholder="123 Main St" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="addressLine2"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Address Line 2 (Optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Apt, suite, etc." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>City</FormLabel>
-                    <FormControl>
-                      <Input placeholder="New York" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="stateOrProvince"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>State / Province</FormLabel>
-                    <FormControl>
-                      <Input placeholder="NY" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <label className={labelClassTxt} htmlFor="fullName">Full Name</label>
+            <input className={inputClassTxt} name="fullName" placeholder="John Doe" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+          </div>
+          <div className="space-y-2">
+            <label className={labelClassTxt} htmlFor="addressLine1">Address Line 1</label>
+            <input className={inputClassTxt} name="addressLine1" placeholder="123 Main St" value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} required />
+          </div>
+          <div className="space-y-2">
+            <label className={labelClassTxt} htmlFor="addressLine2">Address Line 2 (Optional)</label>
+            <input className={inputClassTxt} name="addressLine2" placeholder="123 Main St" value={addressLine2} onChange={(e) => setAddressLine2(e.target.value)} />
+          </div>
+          {user ? (
+            <div className="space-y-2">
+              <label className={labelClassTxt} htmlFor="email">Email</label>
+              <input className={inputClassTxt} name="email" placeholder="email@example.com" value={email} onChange={(e) => setEmail(e.target.value)} disabled/>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="postalCode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Postal Code</FormLabel>
-                    <FormControl>
-                      <Input placeholder="10001" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="country"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Country</FormLabel>
-                    <FormControl>
-                      <Input placeholder="United States" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          ) : (
+            <div className="space-y-2">
+              <label className={labelClassTxt} htmlFor="email">Email</label>
+              <input className={inputClassTxt} name="email" placeholder="email@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
-             <FormField
-              control={form.control}
-              name="phoneNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number (Optional)</FormLabel>
-                  <FormControl>
-                    <Input type="tel" placeholder="(555) 123-4567" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary/90">
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className={labelClassTxt} htmlFor="city">City</label>
+              <input className={inputClassTxt} name="city" placeholder="New York" value={city} onChange={(e) => setCity(e.target.value)} required />
+            </div>
+            <div className="space-y-2">
+              <label className={labelClassTxt} htmlFor="stateOrProvince">State / Province</label>
+              <input className={inputClassTxt} name="stateOrProvince" placeholder="NY" value={stateOrProvince} onChange={(e) => setStateOrProvince(e.target.value)} required />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className={labelClassTxt} htmlFor="postalCode">Postal Code</label>
+              <input className={inputClassTxt} name="postalCode" placeholder="10001" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} required />
+            </div>
+            <div className="space-y-2">
+              <label className={labelClassTxt} htmlFor="country">Country</label>
+              <input className={inputClassTxt} name="country" placeholder="United States" value={country} onChange={(e) => setCountry(e.target.value)} required />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className={labelClassTxt} htmlFor="phoneNumber">Phone Number (Optional)</label>
+            <input className={inputClassTxt} name="phoneNumber" placeholder="(555) 123-4567" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
+          </div>
+          {user &&
+            (<Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary/90">
               Save Address
-            </Button>
-          </form>
-        </Form>
+            </Button>)
+          }
+        </form>
       </CardContent>
     </Card>
   );

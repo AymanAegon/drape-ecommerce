@@ -39,7 +39,7 @@ export function ProductCard({ product }: ProductCardProps) {
           quantity: 1,
           name: product.name,
           price: product.price,
-          size: product.availableSizes[0],
+          size: product.sizes[0],
           color: product.colors[0],
           image: product.images[0], // URL to image
         },

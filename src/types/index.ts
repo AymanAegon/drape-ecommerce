@@ -1,21 +1,25 @@
+import type { Timestamp, FieldValue } from 'firebase/firestore';
+
 export interface Product {
   id: string;
   name: string;
   description: string;
   price: number;
-  availableSizes: string[];
+  sizes: string[];
   colors: string[];
   category: string;
-  stockQuantity: number;
-  images: string[]; // URLs to images
+  stock: number;
+  images: string[]; // URLs
   brand?: string;
+  createdAt?: Timestamp; // Firestore Timestamp
+  updatedAt?: Timestamp; // Firestore Timestamp
 }
-
 
 import { User as AuthUser } from 'firebase/auth';
 
 export interface User extends AuthUser {
   fullName: string;
+  isAdmin: boolean; // Ensure this comes from your Firestore document
 }
 
 export interface CartItem {
@@ -33,4 +37,30 @@ export interface Filters {
   priceRange: [number, number];
   size: string;
   searchQuery?: string;
+}
+
+
+export interface Address {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  phoneNumber: string;
+}
+
+export interface OrderProduct {
+  productId: string;
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+export interface Order {
+  id: string;
+  customerName: string;
+  shippingAddress: Address;
+  products: CartItem[];
+  totalAmount: number;
+  status: 'Pending' | 'Shipped' | 'Delivered' | 'Cancelled';
+  orderDate: Timestamp | FieldValue;
 }

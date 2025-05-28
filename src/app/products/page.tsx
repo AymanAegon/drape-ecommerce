@@ -32,7 +32,7 @@ export default function ProductsPage() {
       const { category, priceRange, size, searchQuery } = filters;
       if (category !== 'All' && product.category !== category) return false;
       if (product.price < priceRange[0] || product.price > priceRange[1]) return false;
-      if (size !== 'All' && !product.availableSizes.includes(size)) return false;
+      if (size !== 'All' && !product.sizes.includes(size)) return false;
       if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase()) && !product.description.toLowerCase().includes(searchQuery.toLowerCase()) && (!product.brand || !product.brand.toLowerCase().includes(searchQuery.toLowerCase()))) return false;
       return true;
     });

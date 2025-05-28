@@ -1,6 +1,8 @@
+
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ShippingAddressForm } from '@/components/checkout/shipping-address-form';
 import { CartReview } from '@/components/checkout/cart-review';
 import { Button } from '@/components/ui/button';
@@ -12,24 +14,35 @@ export default function CheckoutPage() {
   const [isAddressSaved, setIsAddressSaved] = useState(false);
   const { toast } = useToast();
   const { cartItems, setCartItems } = useCart();
+  const router = useRouter();
 
-  const handleAddressSubmit = () => { setIsAddressSaved(true); };
+  const handleAddressSubmit = () => { 
+    setIsAddressSaved(true); 
+    toast({
+      title: "Address Saved",
+      description: "Your shipping address has been saved.",
+    });
+  };
 
   const handleProceedToPayment = () => {
     if (!isAddressSaved) {
       toast({
         title: "Address Required",
-        description: "Please save your shipping address before proceeding.",
+        description: "Please save your shipping address before proceeding to payment.",
         variant: "destructive",
       });
       return;
     }
-    toast({
-      title: "Redirecting to Payment",
-      description: "You will now be redirected to Stripe to complete your payment. (Simulation)",
-    });
-    // Simulate redirect to Stripe
-    console.log('Proceeding to Stripe with cart:', cartItems);
+    if (cartItems.length === 0) {
+      toast({
+        title: "Empty Cart",
+        description: "Your cart is empty. Please add items before proceeding.",
+        variant: "destructive",
+      });
+      return;
+    }
+    // Navigate to the payment page
+    router.push('/payment');
   };
 
   return (
@@ -60,8 +73,12 @@ export default function CheckoutPage() {
                 Proceed to Payment
               </Button>
               <Button
-                onClick={() => setCartItems([])}
-                className="w-full text-lg py-6 bg-red-500 hover:bg-red-600 text-white"
+                onClick={() => {
+                  setCartItems([]);
+                  toast({ title: "Cart Cleared", description: "All items removed from your cart."});
+                }}
+                variant="destructive" // Using destructive variant for clear cart
+                className="w-full text-lg py-6" // Removed specific red colors to rely on theme
                 disabled={cartItems.length === 0}
               >
                 Clear Cart
