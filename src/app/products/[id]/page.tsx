@@ -15,6 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/layout/header';
 import { ShoppingCart, ArrowLeft } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { set } from 'date-fns';
+import { getColor } from '@/lib/utils';
 
 export default function ProductDetailPage() {
   const router = useRouter();
@@ -28,6 +30,15 @@ export default function ProductDetailPage() {
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1); // Default quantity is 1
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const handleShownImage = (color: string) => {
+    if (!product) return;
+    const imageIndex = color.split(',')[1];
+    if (!imageIndex) return;
+    const colorIndex = parseInt(imageIndex);
+    if (colorIndex < 0 || colorIndex >= product.images.length) return;
+    setCurrentImageIndex(colorIndex);
+  }
 
 
   useEffect(() => {
@@ -54,7 +65,7 @@ export default function ProductDetailPage() {
       price: product.price,
       quantity: quantity,
       size: selectedSize,
-      color: selectedColor,
+      color: getColor(selectedColor),
       image: product.images[0], // Use the primary image for the cart
     };
 
@@ -63,7 +74,7 @@ export default function ProductDetailPage() {
         (item) =>
           item.productId === cartItem.productId &&
           item.size === cartItem.size &&
-          item.color === cartItem.color
+          getColor(item.color) === cartItem.color
       );
 
       if (existingItemIndex > -1) {
@@ -186,13 +197,16 @@ export default function ProductDetailPage() {
                   {product.colors.length > 0 && (
                      <div>
                       <label htmlFor="color-select" className="block text-sm font-medium text-foreground mb-1">Color</label>
-                      <Select value={selectedColor} onValueChange={setSelectedColor}>
+                      <Select value={selectedColor} onValueChange={color => {
+                        setSelectedColor(color);
+                        handleShownImage(color);
+                      }}>
                         <SelectTrigger id="color-select" className="w-full md:w-1/2">
                           <SelectValue placeholder="Select color" />
                         </SelectTrigger>
                         <SelectContent>
                           {product.colors.map((color) => (
-                            <SelectItem key={color} value={color}>{color}</SelectItem>
+                            <SelectItem key={color} value={color}>{getColor(color)}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
