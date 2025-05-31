@@ -59,6 +59,15 @@ export default function ProductDetailPage() {
   const handleAddToCart = () => {
     if (!product) return;
 
+    if (quantity > product.stock) {
+      toast({
+        title: 'Error',
+        description: 'Quantity exceeds available stock.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const cartItem: CartItem = {
       productId: product.id,
       name: product.name,
@@ -220,6 +229,7 @@ export default function ProductDetailPage() {
                       id="quantity-input"
                       type="number"
                       min="1"
+                      max={product.stock}
                       value={quantity}
                       onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
                       className="w-20 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
