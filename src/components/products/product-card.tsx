@@ -7,7 +7,7 @@ import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/state';
 import { useToast } from '@/hooks/use-toast';
 
-import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 interface ProductCardProps {
   product: Product;
 }
@@ -15,6 +15,7 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { cartItems, setCartItems } = useCart();
   const { toast } = useToast();
+  const router = useRouter();
 
   function handleAddToCart(product: Product): void {
     toast({ title: "Item Added to Cart", description: `${product.name} has been added to your cart.` });
@@ -48,7 +49,7 @@ export function ProductCard({ product }: ProductCardProps) {
   }
 
   return (
-    <Card className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-all hover:shadow-xl h-full">
+    <Card className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-all hover:shadow-xl h-full cursor-pointer" onClick={() => router.push(`/products/${product.id}`)}>
       <CardHeader className="p-0">
         <div className="aspect-[3/4] relative w-full overflow-hidden">
           <Image
@@ -72,11 +73,11 @@ export function ProductCard({ product }: ProductCardProps) {
           {product.brand && <p className="text-xs text-muted-foreground">By {product.brand}</p>}
         </div>
       </CardContent>
-      <CardFooter className="p-4 border-t">
+      {/* <CardFooter className="p-4 border-t">
         <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={() => handleAddToCart(product)}>
           <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
         </Button>
-      </CardFooter>
+      </CardFooter> */}
     </Card>
   );
 }
