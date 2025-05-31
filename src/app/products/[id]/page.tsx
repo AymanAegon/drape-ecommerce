@@ -67,6 +67,7 @@ export default function ProductDetailPage() {
       });
       return;
     }
+    const cartProductImage = product.images[parseInt(selectedColor.split(',')[1])];
 
     const cartItem: CartItem = {
       productId: product.id,
@@ -75,7 +76,7 @@ export default function ProductDetailPage() {
       quantity: quantity,
       size: selectedSize,
       color: getColor(selectedColor),
-      image: product.images[0], // Use the primary image for the cart
+      image: cartProductImage,
     };
 
     setCartItems((prevItems) => {
