@@ -98,7 +98,7 @@ export default function ProductDetailPage() {
 
     toast({
       title: 'Added to Cart',
-      description: `${product.name} (${selectedColor}, ${selectedSize}) x${quantity} has been added to your cart.`,
+      description: `${product.name} (${getColor(selectedColor)}, ${selectedSize}) x${quantity} has been added to your cart.`,
     });
   };
 
